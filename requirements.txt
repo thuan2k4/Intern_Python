@@ -1,0 +1,8 @@
+requests
+json
+csv
+dotenv
+numpy
+pandas
+matplotlib
+seaborn
