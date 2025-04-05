@@ -1,6 +1,7 @@
 {
     "cSpell.words": [
         "dotenv",
+        "jsonify",
         "matplotlib",
         "numpy",
         "seaborn",
