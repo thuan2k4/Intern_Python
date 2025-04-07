@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block title %} To do App {% endblock %}
+
+{% block head %} {% endblock %}
+
+{% block content %}
+<div class="container mt-2 border border-black rounded-3 p-3">
+  <div class="row">
+    <h1 class="text-center">To Do App</h1>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskModal">Add
+        Task</button>
+    </div>
+  </div>
+  <table class="table table-bordered mt-2 rounded-3">
+    <thead>
+      <tr>
+        <th class="col-1 text-center">ID</th>
+        <th class="col text-center">Task</th>
+        <th class="col-2 text-center">Status</th>
+        <th class="col-4 text-center">Description</th>
+        <th class="col-2"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if tasks %}
+      {% for task in tasks %}
+      <tr>
+        <td class="text-center">{{ task.id }}</td>
+        <td class="text-center">{{ task.title }}</td>
+        <td class="text-center text-{{ task.complete }}">
+          {% if task.complete == "danger" %}
+          <i class="bi bi-x-circle"></i>
+          {% else %}
+          <i class="bi bi-check"></i>
+          {% endif %}
+        </td>
+        <td class="text-center">{{ task.description }}</td>
+        <td class="text-center">
+          <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editItem-{{ task.id }}">
+            <i class="bi bi-pencil"> Change</i>
+          </button>
+          <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#delItem-{{ task.id }}">
+            <i class="bi bi-trash"> Delete</i>
+          </button>
+        </td>
+      </tr>
+
+      <!-- Edit Task Modal -->
+      <div class="modal fade" id="editItem-{{ task.id }}" tabindex="-1" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Chỉnh sửa</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <form action="/api/todo/{{ task.id }}" method="POST">
+                <input type="hidden" name="_method" value="PUT">
+                <div class="form-group">
+                  <label>Task Name</label>
+                  <input type="text" class="form-control" name="title" value="{{ task.title }}" required />
+                </div>
+                <div class="form-group">
+                  <label>Description</label>
+                  <input type="text" class="form-control" name="description" value="{{ task.description }}" required />
+                </div>
+                <div class="form-group">
+                  <label>Status</label>
+                  <select class="form-control" name="complete">
+                    <option value="danger" {% if task.complete=='danger' %}selected{% endif %}>Working</option>
+                    <option value="success" {% if task.complete=='success' %}selected{% endif %}>Done</option>
+                  </select>
+                </div>
+                <div class="modal-footer">
+                  <input type="hidden" name="id" value="{{ task.id }}" />
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    aria-label="Close">Hủy</button>
+                  <button class="btn btn-primary" type="submit">Lưu</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--End edit task modal-->
+
+      <!--Delete-->
+      <div class="modal fade" id="delItem-{{ task.id }}" tabindex="-1" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Chú ý</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              Bạn có chắc muốn xóa task "{{ task.title }}" này không?
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Hủy</button>
+                <form action="/api/todo/{{ task.id }}" method="POST">
+                  <input type="hidden" name="_method" value="DELETE">
+                  <button type="submit" class="btn btn-danger">Xóa</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--End delete-->
+
+      {% endfor %}
+      {% else %}
+      <tr>
+        <td colspan="5" class="text-center fw-bold">No tasks found</td>
+      </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Add Task Modal -->
+<div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Add Task</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="/api/todo" method="POST">
+          <div class="form-group">
+            <label>Task Name</label>
+            <input type="text" class="form-control" name="title" required />
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <input type="text" class="form-control" name="description" required />
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Hủy</button>
+            <button class="btn btn-primary" type="submit">Lưu</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
