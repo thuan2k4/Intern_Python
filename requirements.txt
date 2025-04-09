@@ -11,6 +11,9 @@ fastapi
 uvicorn
 flask
 flask_sqlalchemy
+flask_marshmallow
+flask_migrate
 flask_restful
 flask-jwt-extended
 passlib
+marshmallow-sqlalchemy
