@@ -10,3 +10,7 @@ asyncio
 fastapi
 uvicorn
 flask
+flask_sqlalchemy
+flask_restful
+flask-jwt-extended
+passlib

@@ -5,6 +5,7 @@
         "matplotlib",
         "numpy",
         "seaborn",
+        "stylesheet",
         "xlabel",
         "ylabel"
     ]
