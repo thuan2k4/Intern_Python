@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
-from flask_jwt_extended import create_access_token, create_refresh_token
-from models import User
+from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt, current_user, get_jwt_identity
+from models import User, TokenBlockedList
+from datetime import datetime, timezone
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -38,3 +39,42 @@ def login_user():
         ), 200
 
     return jsonify({'message': 'Invalid credentials'}), 400
+
+@auth_bp.get('/whoami')
+@jwt_required()
+def whoami():
+    #claims = get_jwt() #user info (contain role)
+
+    return jsonify({
+        'message': 'Who Am I ?',
+        'user_details': {
+            "username": current_user.username,
+            "email": current_user.email
+        }
+    }), 200
+#current_user is loaded @jwt.user_lookup_loader
+
+@auth_bp.get('/refresh')
+@jwt_required(refresh=True)
+def refresh():
+    identity = get_jwt_identity()
+    access_token = create_access_token(identity=identity)
+    return jsonify({
+        'username': identity,
+        'message': 'Token refreshed successfully',
+        'access_token': access_token
+    }), 200
+
+#revoke token
+@auth_bp.get('/logout')
+@jwt_required(verify_type=False)
+def logout_user():
+    jwt = get_jwt()
+    jti = jwt['jti']
+    token = TokenBlockedList(jti=jti)
+    token_type = jwt['type']
+    token.add()
+    
+    return jsonify({
+        'message': f'{token_type} token revoked successfully'
+    }), 200

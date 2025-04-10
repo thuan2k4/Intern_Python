@@ -1,5 +1,6 @@
 from extensions import db
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -26,5 +27,14 @@ class User(db.Model):
         db.session.delete(self)
         db.session.commit()
 
+class TokenBlockedList(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    jti = db.Column(db.String(), nullable=False) #JWT ID
+    created_at = db.Column(db.DateTime(), default=datetime.utcnow)
+    
+    def add(self):
+        db.session.add(self)
+        db.session.commit()
+    
     def __repr__(self):
-        return f'<User {self.username}>'
+        return f'<TokenBlockedList {self.jti}>'
