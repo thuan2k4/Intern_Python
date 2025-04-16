@@ -89,3 +89,5 @@ with app.app_context():
 
 if __name__ == "__main__":
     app.run(debug=True, host=os.getenv("HOST"), port=os.getenv("PORT"))
+
+#update no reload

@@ -2,7 +2,7 @@ from flask import Flask, jsonify
 from extensions import db, jwt
 from auth import auth_bp
 from users import users_bp
-from middleware import init_app_jwt, jwt_middleware
+from middleware import init_app_jwt
 
 def create_app():
     app = Flask(__name__)

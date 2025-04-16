@@ -1,7 +1,6 @@
 from extensions import db, jwt
 from flask import request, jsonify
 from models import User, TokenBlockedList
-from functools import wraps
 
 def init_app_jwt(app):
     jwt.init_app(app)
