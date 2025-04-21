@@ -1,9 +1,16 @@
 from flask import Blueprint, jsonify, request
-from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt, current_user, get_jwt_identity
-from models import User, TokenBlockedList
-from datetime import datetime, timezone
+from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt, current_user, decode_token
+from models import User, TokenBlockedList, TokenPair
 
 auth_bp = Blueprint('auth', __name__)
+
+def blockToken(jti):
+    token = TokenBlockedList(jti=jti)
+    token.add()
+
+def addCurrentTokenintoDB(access_token, refresh_token):
+    tokenPair = TokenPair(access_jti=decode_token(access_token)['jti'], refresh_jti= decode_token(refresh_token)['jti'])
+    tokenPair.add()
 
 @auth_bp.post('/register')
 def register_user():
@@ -30,6 +37,8 @@ def login_user():
         access_token = create_access_token(identity=user.username)
         refresh_token = create_refresh_token(identity=user.username)
         
+        addCurrentTokenintoDB(access_token, refresh_token)
+        
         return jsonify(
             {
                 'message': 'Logged in successfully', 
@@ -52,17 +61,31 @@ def whoami():
             "email": current_user.email
         }
     }), 200
-#current_user is loaded @jwt.user_lookup_loader
+
 
 @auth_bp.get('/refresh')
 @jwt_required(refresh=True)
 def refresh():
-    identity = get_jwt_identity()
+    jwt = get_jwt()
+    jti = jwt['jti']
+    identity = jwt['sub']
+    
+    findTokeninDB = TokenPair.query.filter_by(refresh_jti=jti).first()
+    if findTokeninDB:
+        blockToken(findTokeninDB.access_jti)
+    
+    blockToken(jti)
+    
     access_token = create_access_token(identity=identity)
+    refresh_token = create_refresh_token(identity=identity)
+    
+    addCurrentTokenintoDB(access_token, refresh_token)
+    
     return jsonify({
         'username': identity,
         'message': 'Token refreshed successfully',
-        'access_token': access_token
+        'access_token': access_token,
+        'refresh_token': refresh_token
     }), 200
 
 #revoke token
@@ -71,9 +94,9 @@ def refresh():
 def logout_user():
     jwt = get_jwt()
     jti = jwt['jti']
-    token = TokenBlockedList(jti=jti)
     token_type = jwt['type']
-    token.add()
+    
+    blockToken(jti)
     
     return jsonify({
         'message': f'{token_type} token revoked successfully'

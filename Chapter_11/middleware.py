@@ -1,5 +1,5 @@
-from extensions import db, jwt
-from flask import request, jsonify
+from extensions import jwt
+from flask import jsonify
 from models import User, TokenBlockedList
 
 def init_app_jwt(app):
@@ -7,7 +7,7 @@ def init_app_jwt(app):
     
     #load user (use for method current_user)
     @jwt.user_lookup_loader
-    def user_lookup_callback(_jwt_header, jwt_data):
+    def user_lookup_callback(jwt_header, jwt_data):
         identity = jwt_data['sub'] #query username in jwt
         return User.query.filter_by(username=identity).one_or_none() #just 1 query
     
@@ -48,5 +48,6 @@ def init_app_jwt(app):
     @jwt.token_in_blocklist_loader
     def check_if_token_revoked(jwt_header, jwt_payload):
         jti = jwt_payload['jti']
-        token = db.session.query(TokenBlockedList).filter(TokenBlockedList.jti == jti).scalar()
+        token = TokenBlockedList.query.filter_by(jti=jti).first()
+        print(f"Checking JTI: {jti}, Found in blocklist: {token is not None}")
         return token is not None

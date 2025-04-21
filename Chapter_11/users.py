@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt
 from models import User
 from schemas import UserSchema
+from models import TokenBlockedList
 
 users_bp = Blueprint('users', __name__)
 
@@ -9,6 +10,10 @@ users_bp = Blueprint('users', __name__)
 @jwt_required() #check token exists
 def get_all_users():
     #check if user is staff
+    
+    check = TokenBlockedList.query.filter_by(jti=get_jwt().get('jti'))
+    print(f"check: {check}")
+    
     claims = get_jwt()
     if claims['is_staff'] == False:
         return jsonify({

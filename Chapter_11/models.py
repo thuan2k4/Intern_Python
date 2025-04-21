@@ -38,3 +38,14 @@ class TokenBlockedList(db.Model):
     
     def __repr__(self):
         return f'<TokenBlockedList {self.jti}>'
+    
+class TokenPair(db.Model):
+    __tablename__ = 'TokenCurrent'
+    id = db.Column(db.Integer, primary_key=True)
+    access_jti = db.Column(db.String(36), unique=True, nullable=False)
+    refresh_jti = db.Column(db.String(36), unique=True, nullable=False)
+    created_at = db.Column(db.DateTime(), default=datetime.utcnow)
+    
+    def add(self):
+        db.session.add(self)
+        db.session.commit()
